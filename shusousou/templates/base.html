@@ -36,10 +36,7 @@
                     </a>
                 {% else %}
                     <a href="/auth/login">
-                        {% if language == "zh" %}登录{% else %}Login{% endif %}
-                    </a>
-                    <a href="/auth/register">
-                        {% if language == "zh" %}注册{% else %}Register{% endif %}
+                        {% if language == "zh" %}登录/注册{% else %}Login/Register{% endif %}
                     </a>
                 {% endif %}
                 <button class="lang-btn" onclick="switchLanguage()">

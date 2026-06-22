@@ -34,11 +34,11 @@
         
         <div class="form-group">
             <label for="expectations">
-                {% if language == "zh" %}💡 期望说明{% else %}💡 Expectations{% endif %}
+                {% if language == "zh" %}💡 书籍内容简介{% else %}💡 Description{% endif %}
             </label>
             <div style="display:flex;gap:5px;margin-bottom:5px;">
                 <textarea id="expectations" name="expectations" rows="3" style="flex:1;"
-                          placeholder="{% if language == "zh" %}例如：希望借书的人爱惜书本、按时归还...{% else %}e.g. Please take good care of the book...{% endif %}"></textarea>
+                          placeholder="{% if language == "zh" %}可以就书籍内容展开介绍，也可以谈谈自己的阅读感想{% else %}e.g. Please take good care of the book...{% endif %}"></textarea>
             </div>
         </div>
         

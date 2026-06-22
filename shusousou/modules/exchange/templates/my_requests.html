@@ -34,14 +34,28 @@
                         {% endif %}
                     </div>
                 </div>
-                {% if req.is_active %}
-                <form method="post" action="/exchange/request/{{ req.id }}/close" style="margin-left:10px;">
-                    <button type="submit" class="btn btn-secondary" style="padding:3px 10px;font-size:0.85em;"
-                            onclick="return confirm('{% if language == "zh" %}关闭需求？{% else %}Close this request?{% endif %}')">
-                        {% if language == "zh" %}关闭{% else %}Close{% endif %}
-                    </button>
-                </form>
-                {% endif %}
+                <div style="display:flex;gap:5px;margin-left:10px;">
+                    {% if req.is_active %}
+                    <form method="post" action="/exchange/request/{{ req.id }}/close">
+                        <button type="submit" class="btn btn-secondary" style="padding:3px 10px;font-size:0.85em;"
+                                onclick="return confirm('{% if language == "zh" %}关闭需求后，AI将不会再自动匹配你的需求和新书。如需继续匹配，后续可手动重新开启。{% else %}After closing, AI will no longer match your request with new books. You can reopen it manually later.{% endif %}')">
+                            {% if language == "zh" %}关闭{% else %}Close{% endif %}
+                        </button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="/exchange/request/{{ req.id }}/reopen">
+                        <button type="submit" class="btn btn-primary" style="padding:3px 10px;font-size:0.85em;background:#2e7d32;color:#fff;border:none;border-radius:4px;cursor:pointer;">
+                            {% if language == "zh" %}开启{% else %}Reopen{% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
+                    <form method="post" action="/exchange/request/{{ req.id }}/delete">
+                        <button type="submit" class="btn btn-danger" style="padding:3px 10px;font-size:0.85em;background:#c62828;color:#fff;border:none;border-radius:4px;cursor:pointer;"
+                                onclick="return confirm('{% if language == "zh" %}确定删除此需求？此操作不可恢复。{% else %}Delete this request? This cannot be undone.{% endif %}')">
+                            {% if language == "zh" %}删除{% else %}Delete{% endif %}
+                        </button>
+                    </form>
+                </div>
             </div>
             
             {% if req.matches %}

@@ -33,10 +33,12 @@ env = Environment(loader=loader, cache_size=0)
 templates = Jinja2Templates(env=env)
 
 
+# 全局引擎
+_db_path = os.path.join(BASE_DIR, "database", "database.db")
+_db_engine = create_engine(f"sqlite:///{_db_path}", connect_args={"check_same_thread": False})
+
 def get_db():
-    db_path = os.path.join(BASE_DIR, "database", "database.db")
-    db_engine = create_engine(f"sqlite:///{db_path}", connect_args={"check_same_thread": False})
-    return DBSession(db_engine)
+    return DBSession(_db_engine)
 
 
 def require_login(request: Request):
@@ -326,36 +328,7 @@ async def new_request(
         session.add(req)
         session.commit()
         
-        match_count = 0
-        books = session.query(ExchangeBook).filter(
-            ExchangeBook.status == "available"
-        ).all()
         
-        for book in books:
-            if book.owner_id == current_user.id:
-                continue
-            existing = session.query(RequestMatch).filter(
-                RequestMatch.request_id == req.id,
-                RequestMatch.book_id == book.id
-            ).first()
-            if existing:
-                continue
-            
-            is_match, reason = ai_match_check(
-                req.description, book.book_name, book.author or "", book.requirements or ""
-            )
-            if is_match and reason:
-                match = RequestMatch(request_id=req.id, book_id=book.id, match_reason=reason)
-                session.add(match)
-                match_count += 1
-                user = session.query(User).filter(User.id == current_user.id).first()
-                if user and user.email:
-                    from ...mailer import send_email
-                    subject = "书搜搜 - 你挂的需求有匹配的图书啦!"
-                    body = f"<h2>书搜搜</h2><p>你好 {user.username}，</p><p>需求「{req.description[:50]}」匹配到《{book.book_name}》</p><p>理由：{reason}</p><p><a href=\"http://localhost:8000/exchange/{book.id}\">查看详情</a></p>"
-                    send_email(user.email, subject, body)
-        
-        session.commit()
     
     return RedirectResponse(url="/exchange/my-requests", status_code=303)
 
@@ -646,3 +619,56 @@ async def close_exchange(request: Request, book_id: int):
     return RedirectResponse(url="/exchange/", status_code=303)
 
 
+
+
+# ============================================
+# 删除需求
+# ============================================
+@router.post("/request/{request_id}/delete")
+async def delete_request(request: Request, request_id: int):
+    """删除需求（包括关联的匹配记录）"""
+    login_check = require_login(request)
+    if isinstance(login_check, RedirectResponse):
+        return login_check
+    current_user = login_check
+    
+    with get_db() as session:
+        req = session.query(ExchangeRequest).filter(
+            ExchangeRequest.id == request_id,
+            ExchangeRequest.user_id == current_user.id
+        ).first()
+        
+        if req:
+            session.query(RequestMatch).filter(
+                RequestMatch.request_id == request_id
+            ).delete()
+            session.delete(req)
+            session.commit()
+            print(f"[Delete] 用户 {current_user.username} 删除了需求 #{request_id}")
+    
+    return RedirectResponse(url="/exchange/my-requests", status_code=303)
+
+
+# ============================================
+# 重新开启需求
+# ============================================
+@router.post("/request/{request_id}/reopen")
+async def reopen_request(request: Request, request_id: int):
+    """重新开启已关闭的需求"""
+    login_check = require_login(request)
+    if isinstance(login_check, RedirectResponse):
+        return login_check
+    current_user = login_check
+    
+    with get_db() as session:
+        req = session.query(ExchangeRequest).filter(
+            ExchangeRequest.id == request_id,
+            ExchangeRequest.user_id == current_user.id
+        ).first()
+        
+        if req:
+            req.is_active = True
+            session.commit()
+            print(f"[Reopen] 用户 {current_user.username} 重新开启了需求 #{request_id}")
+    
+    return RedirectResponse(url="/exchange/my-requests", status_code=303)

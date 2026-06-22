@@ -32,6 +32,8 @@ app.include_router(forum_router)
 from .modules.exchange.routes import router as exchange_router
 from .modules.exchange.routes import run_match_check
 app.include_router(exchange_router)
+from .modules.profile.routes import router as profile_router
+app.include_router(profile_router)
 
 # 启动定时匹配扫描（每60秒一次）
 import threading

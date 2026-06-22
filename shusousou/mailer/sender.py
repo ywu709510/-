@@ -23,9 +23,28 @@ def _print_email(to_email, subject, body):
     print("=" * 60 + "\n")
 
 
+import smtplib
+from email.mime.text import MIMEText
+from ..config import MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM
+
 def send_email(to_email: str, subject: str, body: str):
-    """发送邮件（开发模式：打印到控制台）"""
-    _print_email(to_email, subject, body)
+    """发送邮件（QQ邮箱SMTP）"""
+    try:
+        msg = MIMEText(body, "html", "utf-8")
+        msg["Subject"] = subject
+        msg["From"] = MAIL_FROM
+        msg["To"] = to_email
+        
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
+        server.starttls()
+        server.login(MAIL_USERNAME, MAIL_PASSWORD)
+        server.sendmail(MAIL_FROM, to_email, msg.as_string())
+        server.quit()
+        print(f"[Mail] 已发送 -> {to_email} | {subject}")
+    except Exception as e:
+        print(f"[Mail] 发送失败 -> {to_email}: {e}")
+        # 失败时打印到控制台
+        _print_email(to_email, subject, body)
 
 
 def send_verification_email(to_email: str, username: str, verify_link: str):

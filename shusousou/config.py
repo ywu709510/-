@@ -12,7 +12,7 @@ import os
 # 获取方式：https://platform.deepseek.com/
 DEEPSEEK_API_KEY = ""  # ← 请替换为你的真实Key
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
-DEEPSEEK_MODEL = "deepseek-chat"
+DEEPSEEK_MODEL = "deepseek-v4-flash"
 
 # ============================================
 # 网站基本配置
@@ -43,7 +43,7 @@ DATABASE_URL = "sqlite:///./shusousou/database/database.db"
 MAIL_SERVER = "smtp.qq.com"
 MAIL_PORT = 587
 MAIL_USERNAME = "2024604689@qq.com"  # ← 请替换为你的邮箱
-MAIL_PASSWORD = "eqlovlpdiqfubbeh"  # ← 请替换为你的SMTP授权码
+MAIL_PASSWORD = ""  # ← 请替换为你的SMTP授权码
 MAIL_FROM = "2024604689@qq.com"      # ← 请替换为发件人邮箱
 
 # ============================================

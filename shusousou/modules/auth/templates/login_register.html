@@ -1,10 +1,78 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}{% if language == "zh" %}登录 / 注册 - 书搜搜{% else %}Login / Register - BookSearch{% endif %}{% endblock %}
 {% block content %}
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;max-width:900px;margin:0 auto;">
+<div style="max-width:450px;margin:0 auto;">
+
+    {% if mode == "register" %}
+    <!-- ========== 注册页面 ========== -->
+    <div class="form-container" style="margin:0;">
+        <h2>{% if language == "zh" %}注册{% else %}Register{% endif %}</h2>
+        
+        {% if register_error %}
+        <div class="message message-error">{{ register_error }}</div>
+        {% endif %}
+        
+        {% if register_success %}
+        <div class="message message-success">{{ register_success }}</div>
+        {% else %}
+        
+        <form method="post" action="/auth/register" id="registerForm">
+            <div class="form-group">
+                <label for="reg_username">{% if language == "zh" %}用户名 *{% else %}Username *{% endif %}</label>
+                <input type="text" id="reg_username" name="username" required
+                       placeholder="{% if language == "zh" %}给自己起个名字{% else %}Choose a username{% endif %}">
+            </div>
+            
+            <div class="form-group">
+                <label for="reg_email">{% if language == "zh" %}邮箱 *{% else %}Email *{% endif %}</label>
+                <div style="display:flex;gap:5px;">
+                    <input type="email" id="reg_email" name="email" required style="flex:1;"
+                           placeholder="{% if language == "zh" %}你的邮箱{% else %}Your email{% endif %}">
+                    <button type="button" class="btn btn-primary" id="sendCodeBtn" style="white-space:nowrap;padding:8px 15px;background:#5D8AA8;" onclick="sendCode(event);return false;">
+                        {% if language == "zh" %}发送验证码{% else %}Send Code{% endif %}
+                    </button>
+                </div>
+                <small style="color:#999;font-size:0.85em;margin-top:3px;display:block;">
+                    {% if language == "zh" %}
+                    📬 点击"发送验证码"后，6位数字验证码将发送至你的邮箱，请查收后完成注册。邮箱也将用于接收匹配通知、消息提醒等。
+                    {% else %}
+                    📬 Click "Send Code" to receive a 6-digit code via email. Your email will also receive match notifications & messages.
+                    {% endif %}
+                </small>
+            </div>
+            
+            <div class="form-group">
+                <label for="reg_code">{% if language == "zh" %}验证码 *{% else %}Verification Code *{% endif %}</label>
+                <input type="text" id="reg_code" name="verify_code" required maxlength="6"
+                       placeholder="{% if language == "zh" %}输入6位验证码{% else %}Enter 6-digit code{% endif %}"
+                       style="text-align:center;font-size:1.2em;letter-spacing:8px;">
+                <small id="codeStatus" style="color:#5D8AA8;"></small>
+            </div>
+            
+            <div class="form-group">
+                <label for="reg_password">{% if language == "zh" %}密码 *{% else %}Password *{% endif %}</label>
+                <input type="password" id="reg_password" name="password" required minlength="6"
+                       placeholder="{% if language == "zh" %}至少6位{% else %}At least 6 chars{% endif %}">
+            </div>
+            
+            <button type="submit" class="form-submit">
+                {% if language == "zh" %}注册{% else %}Register{% endif %}
+            </button>
+        </form>
+        {% endif %}
+        
+        <div style="text-align:center;margin-top:15px;color:#888;">
+            {% if language == "zh" %}
+            已有账号？<a href="/auth/login" style="color:#8B4513;text-decoration:underline;">点击登录</a>
+            {% else %}
+            Already have an account? <a href="/auth/login" style="color:#8B4513;text-decoration:underline;">Login here</a>
+            {% endif %}
+        </div>
+    </div>
     
-    <!-- ========== 左侧：登录 ========== -->
+    {% else %}
+    <!-- ========== 登录页面 ========== -->
     <div class="form-container" style="margin:0;">
         <h2>{% if language == "zh" %}登录{% else %}Login{% endif %}</h2>
         
@@ -29,39 +97,60 @@
                 {% if language == "zh" %}登录{% else %}Login{% endif %}
             </button>
         </form>
-    </div>
-    
-    <!-- ========== 右侧：注册 ========== -->
-    <div class="form-container" style="margin:0;">
-        <h2>{% if language == "zh" %}注册{% else %}Register{% endif %}</h2>
         
-        {% if register_error %}
-        <div class="message message-error">{{ register_error }}</div>
-        {% endif %}
-        
-        {% if register_success %}
-        <div class="message message-success">{{ register_success }}</div>
-        {% else %}
-        <form method="post" action="/auth/register">
-            <div class="form-group">
-                <label for="reg_username">{% if language == "zh" %}用户名{% else %}Username{% endif %}</label>
-                <input type="text" id="reg_username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="reg_email">{% if language == "zh" %}邮箱{% else %}Email{% endif %}</label>
-                <input type="email" id="reg_email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="reg_password">{% if language == "zh" %}密码{% else %}Password{% endif %}</label>
-                <input type="password" id="reg_password" name="password" required minlength="6">
-                <small>{% if language == "zh" %}至少6位{% else %}At least 6 chars{% endif %}</small>
-            </div>
-            <button type="submit" class="form-submit">
-                {% if language == "zh" %}注册{% else %}Register{% endif %}
-            </button>
-        </form>
-        {% endif %}
+        <div style="text-align:center;margin-top:15px;color:#888;">
+            {% if language == "zh" %}
+            还没有账号？<a href="/auth/register" style="color:#8B4513;text-decoration:underline;">点击注册</a>
+            {% else %}
+            No account? <a href="/auth/register" style="color:#8B4513;text-decoration:underline;">Register here</a>
+            {% endif %}
+        </div>
     </div>
+    {% endif %}
 </div>
+
+<script>
+function sendCode(e) {
+    e.preventDefault();
+    var email = document.getElementById("reg_email").value.trim();
+    if (!email) {
+        alert("{% if language == "zh" %}请先输入邮箱{% else %}Please enter email first{% endif %}");
+        return;
+    }
+    
+    var btn = document.getElementById("sendCodeBtn");
+    btn.disabled = true;
+    btn.textContent = "{% if language == "zh" %}发送中...{% else %}Sending...{% endif %}";
+    document.getElementById("codeStatus").textContent = "{% if language == "zh" %}正在发送验证码...{% else %}Sending code...{% endif %}";
+    
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/auth/send-code-ajax", true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+        if (xhr.status == 200) {
+            var data = JSON.parse(xhr.responseText);
+            if (data.success) {
+                document.getElementById("codeStatus").textContent = "{% if language == "zh" %}✅ 验证码已发送，请查收邮箱{% else %}✅ Code sent, check your inbox{% endif %}";
+                document.getElementById("codeStatus").style.color = "#2e7d32";
+            } else {
+                document.getElementById("codeStatus").textContent = data.message;
+                document.getElementById("codeStatus").style.color = "#f44336";
+            }
+        } else {
+            document.getElementById("codeStatus").textContent = "{% if language == "zh" %}发送失败，请重试{% else %}Failed, try again{% endif %}";
+            document.getElementById("codeStatus").style.color = "#f44336";
+        }
+        btn.disabled = false;
+        btn.textContent = "{% if language == "zh" %}重新发送{% else %}Resend{% endif %}";
+    };
+    xhr.onerror = function() {
+        document.getElementById("codeStatus").textContent = "{% if language == "zh" %}网络错误{% else %}Network error{% endif %}";
+        document.getElementById("codeStatus").style.color = "#f44336";
+        btn.disabled = false;
+        btn.textContent = "{% if language == "zh" %}发送验证码{% else %}Send Code{% endif %}";
+    };
+    xhr.send("email=" + encodeURIComponent(email));
+}
+</script>
 
 {% endblock %}
